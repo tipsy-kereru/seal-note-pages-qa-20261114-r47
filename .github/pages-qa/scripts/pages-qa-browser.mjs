@@ -29,21 +29,30 @@ async function withBrowser(records, inspect) {
     { stdio: ["ignore", "ignore", "pipe"], windowsHide: true });
   const stopped = once(child, "close").catch(() => {});
   let socket;
-  let timer;
   try {
-    const port = await new Promise((resolve, reject) => {
-      const fail = () => reject(problem("Chromium startup failed", "unavailable"));
-      timer = setTimeout(fail, 12_000);
-      child.once("error", fail);
-      child.once("exit", fail);
-      let log = "";
-      child.stderr.on("data", data => {
-        log = (log + data).slice(-2048);
-        const hit = /DevTools listening on ws:\/\/127\.0\.0\.1:(\d+)\//.exec(log);
-        if (hit) resolve(hit[1]);
-      });
+    // Chromium publishes its listening port in the dedicated profile. Hosted runners
+    // can emit a burst of unrelated stderr after the announcement, or start slowly.
+    let port, launchError, diagnostic = "", tail = "";
+    child.once("error", () => { launchError = true; });
+    child.stderr.on("data", data => {
+      const log = tail + data.toString();
+      tail = log.slice(-160);
+      port ||= /DevTools listening on ws:\/\/127\.0\.0\.1:(\d+)\//.exec(log)?.[1];
+      if (/No usable sandbox|Failed to move to new namespace|sandbox.*Operation not permitted/i.test(log)) diagnostic = " (sandbox)";
+      if (/error while loading shared libraries/i.test(log)) diagnostic = " (shared library)";
     });
-    clearTimeout(timer);
+    const deadline = Date.now() + 35_000;
+    while (!port && Date.now() < deadline) {
+      if (launchError || child.exitCode !== null || child.signalCode) {
+        throw problem("Chromium exited before CDP readiness" + diagnostic, "unavailable");
+      }
+      try {
+        const active = readFileSync(join(profile, "DevToolsActivePort"), "utf8");
+        port = /^([1-9]\d{0,4})\r?\n\/devtools\/browser\//.exec(active)?.[1];
+      } catch (e) { if (e.code !== "ENOENT") throw e; }
+      if (!port) await delay(200);
+    }
+    if (!port || Number(port) > 65535) throw problem("Chromium CDP readiness timed out" + diagnostic, "unavailable");
     const local = `127.0.0.1:${port}`;
     const list = await fetch(`http://${local}/json/list`, { redirect: "error", signal: AbortSignal.timeout(5000) });
     const tab = (await list.json()).find(t => t.type === "page" && t.url === "about:blank");
@@ -114,7 +123,6 @@ async function withBrowser(records, inspect) {
     if (blocked.length) throw problem("browser requested an unapproved resource (" + blocked[0] + ")");
     return result;
   } finally {
-    clearTimeout(timer);
     socket?.close();
     child.kill();
     await stopped;
@@ -191,11 +199,11 @@ export function resolveLink(raw, page, site, records) {
   return { href, resource: u.href, fragment };
 }
 
-export function checkBrowser(site, records) {
+export async function checkBrowser(site, records) {
   const baseCss = readFileSync(new URL("../knowledge/templates/clean-note.css", import.meta.url), "utf8").replaceAll("\r\n", "\n").trim();
   const linkedBase = [...records].filter(([url, r]) => url.endsWith(".css")
     && r.bytes.toString("utf8").replaceAll("\r\n", "\n").includes(baseCss)).map(([url]) => url);
-  return withBrowser(records, async (visit, evaluate) => {
+  const inspect = async (visit, evaluate) => {
     const pages = [...records.keys()].filter(url => url === site || url.endsWith(".html"));
     const results = [];
     const homeTargets = new Set();
@@ -248,5 +256,11 @@ export function checkBrowser(site, records) {
       throw problem("home index is missing a published note");
     }
     return results;
-  });
+  };
+  try { return await withBrowser(records, inspect); }
+  catch (e) {
+    if (e.state !== "unavailable" || e.message !== "Chromium CDP readiness timed out") throw e;
+    // Reuse the same captured bytes, with exactly one fresh isolated browser.
+    return withBrowser(records, inspect);
+  }
 }

@@ -1,6 +1,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { appendFileSync, readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
+import { inspectWithdrawal } from "./withdrawal.mjs";
 
 const repo = "tipsy-kereru/seal-note-pages-qa-20261114-r47";
 const repoId = 1469361731;
@@ -73,7 +74,7 @@ export function resolveEvent(event, name, api = get) {
   return matches[0];
 }
 
-function main() {
+async function main() {
   let summary;
   try {
     const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));
@@ -81,15 +82,18 @@ function main() {
     const p = spawnSync(process.execPath, ["scripts/pages-qa.mjs", "--deployment", target.deployment,
       "--status", target.status, "--sha", target.sha], { encoding: "utf8", timeout: 150000, maxBuffer: 4 * 1024 * 1024 });
     check(!p.error && Number.isInteger(p.status), "inspection did not finish");
-    const result = JSON.parse(p.stdout);
+    let result = JSON.parse(p.stdout);
     check(result.sha === target.sha && result.deployment === target.deployment && result.status === target.status &&
       (!result.run || result.run === runBase + target.pagesRun), "inspection evidence differs");
+    if (result.state === "failed" && result.reason === "docs/.seal-pages.json is not a normal v1 publication") {
+      result = await inspectWithdrawal(result, get);
+    }
     console.log(JSON.stringify(result));
     summary = [`**${result.state}** · \`${process.env.GITHUB_EVENT_NAME}\``,
       `Commit \`${target.sha}\` · deployment \`${target.deployment}\` · success status \`${target.status}\``,
       `[Pages run ${target.pagesRun}](${runBase}${target.pagesRun}) · attempt ${target.attempt}`,
       `[QA run ${process.env.GITHUB_RUN_ID}](${runBase}${process.env.GITHUB_RUN_ID}) · checker \`f0b9cd1\``].join("\n\n");
-    process.exitCode = p.status;
+    process.exitCode = { passed: 0, withdrawn_verified: 0, failed: 1, pending: 2, unavailable: 3 }[result.state] ?? 3;
   } catch (error) {
     // The event and HTTP bodies can contain free text. Only print our fixed evidence errors.
     const reason = error.constructor === Error ? error.message : "cannot read event or inspection evidence";
@@ -99,4 +103,4 @@ function main() {
   }
   appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary + "\n");
 }
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();

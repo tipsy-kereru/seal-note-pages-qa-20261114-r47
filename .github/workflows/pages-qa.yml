@@ -52,8 +52,8 @@ jobs:
           [[ "$QA_REVISION" =~ ^[a-f0-9]{40}$ ]]
           for path in run.mjs scripts/pages-qa.mjs scripts/pages-qa-browser.mjs knowledge/templates/clean-note.css; do
             mkdir -p "$(dirname "$path")"
-            gh api --hostname github.com --method GET -H 'Accept: application/vnd.github.raw+json' \
-              "repositories/1469361731/contents/.github/pages-qa/$path?ref=$QA_REVISION" > "$path"
+            gh api --hostname github.com --method GET --jq '.content' \
+              "repositories/1469361731/contents/.github/pages-qa/$path?ref=$QA_REVISION" | base64 --decode > "$path"
           done
           [[ "$(git hash-object scripts/pages-qa.mjs)" == 2ecc538e5eb24162a585371816b3e77b8c23e300 ]]
           [[ "$(git hash-object scripts/pages-qa-browser.mjs)" == 9e9ea1bdbeabd43f80bcdf8f2bfc4ca9c4bcef72 ]]

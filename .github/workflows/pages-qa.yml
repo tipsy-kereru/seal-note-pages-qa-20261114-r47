@@ -1,0 +1,65 @@
+name: Verify published Pages
+run-name: Pages QA · ${{ github.event_name }} · Pages run ${{ github.event.workflow_run.id || inputs.pages_run }}
+
+on:
+  workflow_run:
+    workflows: ["pages build and deployment", "pages-build-deployment"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      pages_run:
+        description: Exact successful dynamic Pages run ID (attempt 1)
+        required: true
+        type: string
+      deployment:
+        description: Exact github-pages deployment ID
+        required: true
+        type: string
+      status:
+        description: Exact successful deployment status ID
+        required: true
+        type: string
+      sha:
+        description: Full commit SHA of that deployment
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  pages: read
+  deployments: read
+
+jobs:
+  inspect:
+    if: >-
+      github.repository_id == '1469361731' && github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.workflow_id == 428361625 &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_repository.id == 1469361731))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - name: Load the QA files from this workflow's immutable revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+          QA_REVISION: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$QA_REVISION" =~ ^[a-f0-9]{40}$ ]]
+          for path in run.mjs scripts/pages-qa.mjs scripts/pages-qa-browser.mjs knowledge/templates/clean-note.css; do
+            mkdir -p "$(dirname "$path")"
+            gh api --hostname github.com --method GET -H 'Accept: application/vnd.github.raw+json' \
+              "repositories/1469361731/contents/.github/pages-qa/$path?ref=$QA_REVISION" > "$path"
+          done
+          [[ "$(git hash-object scripts/pages-qa.mjs)" == 2ecc538e5eb24162a585371816b3e77b8c23e300 ]]
+          [[ "$(git hash-object scripts/pages-qa-browser.mjs)" == 9e9ea1bdbeabd43f80bcdf8f2bfc4ca9c4bcef72 ]]
+          [[ "$(git hash-object knowledge/templates/clean-note.css)" == df6e5c98d47e117246391dd08571ba111126c959 ]]
+      - name: Match the successful deploy job and verify its public output
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_QA_CHROME: /usr/bin/google-chrome
+        run: node run.mjs

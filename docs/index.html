@@ -1,1 +1,274 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>Publication withdrawn</title></head><body><p>Publication withdrawn.</p></body></html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; object-src 'none'"><title>Notes</title><style>/* Original Seal Note reference template. This styles documents, not application chrome.
+   Apply profile custom properties directly to .seal-note-document.
+   data-note-theme="light" | "dark"; omit the attribute to follow the OS. */
+.seal-note-document {
+  --font-body: var(--document-font, "NanumGothicCoding", "Nanum Gothic Coding", "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace);
+  --font-mono: var(--editor-font, "NanumGothicCoding", "Nanum Gothic Coding", "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace);
+  --font-size: 1rem;
+  --line-height: 1.8;
+  --content-width: 72ch;
+  --fg: #20313b;
+  --muted: #52636e;
+  --border: #bac8ce;
+  --surface: #ffffff;
+  --surface-subtle: #eef3f5;
+  --accent: #075d80;
+  --success: #246844;
+  --warning: #805700;
+  --error: #a32f38;
+  color-scheme: light;
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: var(--content-width);
+  min-inline-size: 0;
+  margin-inline: auto;
+  padding: clamp(1.25rem, 4vw, 3rem);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: var(--font-size);
+  line-height: var(--line-height);
+  text-align: start;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: manual;
+}
+
+.seal-note-document[data-note-theme="dark"] {
+  --fg: #e3edf1;
+  --muted: #b3c2ca;
+  --border: #526670;
+  --surface: #172830;
+  --surface-subtle: #213740;
+  --accent: #87d4f0;
+  --success: #94d7af;
+  --warning: #efcf7b;
+  --error: #ffafb5;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  .seal-note-document:not([data-note-theme="light"]):not([data-note-theme="dark"]) {
+    --fg: #e3edf1;
+    --muted: #b3c2ca;
+    --border: #526670;
+    --surface: #172830;
+    --surface-subtle: #213740;
+    --accent: #87d4f0;
+    --success: #94d7af;
+    --warning: #efcf7b;
+    --error: #ffafb5;
+    color-scheme: dark;
+  }
+}
+
+.seal-note-document :where(*, *::before, *::after) {
+  box-sizing: border-box;
+}
+
+.seal-note-document :where(p, ul, ol, dl, blockquote, pre, table, figure, details) {
+  margin-block: 0 1.25em;
+}
+
+.seal-note-document :where(h1, h2, h3, h4, h5, h6) {
+  margin-block: 1.8em 0.6em;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  scroll-margin-block-start: 1.5rem;
+  break-after: avoid-page;
+}
+
+.seal-note-document :where(h1) { font-size: 2.1em; }
+.seal-note-document :where(h2) { font-size: 1.55em; }
+.seal-note-document :where(h3) { font-size: 1.25em; }
+.seal-note-document :where(h4) { font-size: 1.1em; }
+.seal-note-document :where(h5) { font-size: 1em; }
+.seal-note-document :where(h6) { font-size: 0.95em; color: var(--muted); }
+.seal-note-document > :first-child { margin-block-start: 0; }
+.seal-note-document > :last-child { margin-block-end: 0; }
+
+.seal-note-document :where(a) {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.2em;
+}
+
+.seal-note-document :where(a:hover) {
+  text-decoration-thickness: 0.15em;
+}
+
+.seal-note-document :where(:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.seal-note-document :where(strong) { font-weight: 700; }
+.seal-note-document :where(small, figcaption, caption) { font-size: 0.875em; }
+.seal-note-document :where(small, figcaption) { color: var(--muted); }
+.seal-note-document :where(sup, sub) { line-height: 0; }
+.seal-note-document :where(mark) { background: var(--surface-subtle); color: var(--fg); }
+
+.seal-note-document :where(ul, ol) { padding-inline-start: 1.6em; }
+.seal-note-document :where(li) { margin-block: 0.35em; }
+.seal-note-document :where(li > ul, li > ol) { margin-block: 0.4em 0.7em; }
+.seal-note-document :where(li > p) { margin-block-end: 0.5em; }
+.seal-note-document :where(dt) { font-weight: 700; }
+.seal-note-document :where(dd) { margin-inline-start: 1.5em; margin-block-end: 0.75em; }
+.seal-note-document :where(.task-list-item) { list-style: none; }
+.seal-note-document :where(input[type="checkbox"]) {
+  inline-size: 1em;
+  block-size: 1em;
+  margin-inline: -1.4em 0.4em;
+  vertical-align: -0.1em;
+  accent-color: var(--accent);
+}
+
+.seal-note-document :where(blockquote) {
+  margin-inline: 0;
+  padding: 0.4em 1.1em;
+  border-inline-start: 3px solid var(--accent);
+  background: var(--surface-subtle);
+}
+
+.seal-note-document :where(blockquote > :last-child) { margin-block-end: 0; }
+.seal-note-document :where(hr) {
+  margin-block: 2rem;
+  border: 0;
+  border-block-start: 1px solid var(--border);
+}
+
+.seal-note-document :where(code, kbd, samp, pre) {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+.seal-note-document :where(code, kbd, samp) {
+  padding: 0.1em 0.3em;
+  border-radius: 0.2em;
+  background: var(--surface-subtle);
+}
+
+.seal-note-document :where(kbd) { border: 1px solid var(--border); }
+.seal-note-document :where(pre) {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  padding: 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  background: var(--surface-subtle);
+  line-height: 1.65;
+  white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
+  tab-size: 2;
+}
+
+.seal-note-document :where(pre code) {
+  padding: 0;
+  background: transparent;
+  font-size: 1em;
+  border-radius: 0;
+}
+
+/* A bare Markdown table is its own scroll region; no renderer wrapper required.
+   Give overflowing tables tabindex="0" and an accessible caption in the renderer. */
+.seal-note-document :where(table) {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  border-spacing: 0;
+  border-collapse: separate;
+  font-size: 0.9em;
+  line-height: 1.6;
+}
+
+.seal-note-document :where(caption) {
+  padding-block-end: 0.6em;
+  color: var(--muted);
+  font-weight: 600;
+  text-align: start;
+  caption-side: top;
+}
+
+.seal-note-document :where(th, td) {
+  min-inline-size: 9rem;
+  padding: 0.7em 0.9em;
+  border-block-end: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.seal-note-document :where(th) {
+  background: var(--surface-subtle);
+  font-weight: 700;
+}
+
+.seal-note-document :where(figure) { margin-inline: 0; }
+.seal-note-document :where(img, video, svg, canvas, audio, iframe) {
+  max-inline-size: 100%;
+}
+.seal-note-document :where(img, video, svg, canvas) { block-size: auto; }
+.seal-note-document :where(figure > img, figure > svg, figure > video) { display: block; }
+.seal-note-document :where(figcaption) { margin-block-start: 0.6em; }
+.seal-note-document :where(details) {
+  padding: 0.8em 1em;
+  border: 1px solid var(--border);
+}
+.seal-note-document :where(summary) { cursor: pointer; font-weight: 600; }
+.seal-note-document :where(details[open] > summary) { margin-block-end: 0.75em; }
+.seal-note-document :where(details > :last-child) { margin-block-end: 0; }
+
+.seal-note-document :where(.footnotes, [role="doc-endnotes"]) {
+  margin-block-start: 2.5rem;
+  padding-block-start: 1rem;
+  border-block-start: 1px solid var(--border);
+  font-size: 0.875em;
+}
+.seal-note-document :where([role="doc-noteref"], [role="doc-backlink"], .footnote-ref, .footnote-backref) {
+  scroll-margin-block: 2rem;
+}
+
+@media (max-width: 30rem) {
+  .seal-note-document { padding: 1.25rem 1rem; }
+  .seal-note-document :where(h1) { font-size: 1.8em; }
+  .seal-note-document :where(pre) { padding: 0.8rem; }
+}
+
+@media print {
+  .seal-note-document,
+  .seal-note-document[data-note-theme="dark"],
+  .seal-note-document:not([data-note-theme="light"]):not([data-note-theme="dark"]) {
+    --fg: #000000;
+    --muted: #333333;
+    --border: #777777;
+    --surface: #ffffff;
+    --surface-subtle: #ffffff;
+    --accent: #000000;
+    color-scheme: light;
+    max-inline-size: none;
+    padding: 0;
+    font-size: 11pt;
+  }
+  .seal-note-document :where(pre) {
+    overflow: visible;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .seal-note-document :where(table) {
+    display: table;
+    table-layout: fixed;
+    overflow: visible;
+    font-size: 0.8em;
+  }
+  .seal-note-document :where(th, td) { min-inline-size: 0; padding: 0.4em; }
+  .seal-note-document :where(thead) { display: table-header-group; }
+  .seal-note-document :where(tr, figure, blockquote) { break-inside: avoid; }
+  .seal-note-document :where(p) { orphans: 3; widows: 3; }
+}
+
+body{margin:0;background:#fff}.seal-note-document.compact-note{font-size:14px;line-height:1.6}img,video{max-width:100%}pre{overflow:auto}p{white-space:pre-wrap}</style></head><body><article class="seal-note-document markdown-body " data-note-theme="light"><h1>Notes</h1><h1>Notes</h1><ul><li><a href="/seal-note-pages-qa-20261114-r47/field-note.html">Pages QA field note</a></li><li><a href="/seal-note-pages-qa-20261114-r47/image-credit.html">Pages QA image credit</a></li></ul></article></body></html>
